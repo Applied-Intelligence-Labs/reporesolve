@@ -1,0 +1,8 @@
+project_name: "sample-multi-repo"
+repos:
+  - "https://github.com/example/repo-a"
+  - "https://github.com/example/repo-b"
+main_repo: "https://github.com/example/repo-a"
+mode: "guided"
+provider: "openai"
+model: "gpt-5.4"
