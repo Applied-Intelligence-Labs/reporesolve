@@ -6,17 +6,18 @@ from .base import ToolResult
 
 
 def run_smoke_tests(repo_paths: List[str]) -> ToolResult:
-    logs: List[str] = ["Mock run_smoke_tests invoked."]
-    errors: List[str] = []
-
-    results = []
-    for path in repo_paths:
-        results.append({"path": path, "success": True, "detail": "mock"})
+    logs: List[str] = [
+        "Smoke execution is not part of RepoResolve v0 main flow.",
+        "Use `reporesolve doctor` for the supported validation path.",
+    ]
+    errors: List[str] = [
+        "Standalone smoke execution is outside the RepoResolve v0 release flow."
+    ]
 
     return ToolResult(
         name="run_smoke_tests",
-        success=True,
+        success=False,
         logs=logs,
         errors=errors,
-        data={"results": results},
+        data={"repo_count": len(repo_paths)},
     )

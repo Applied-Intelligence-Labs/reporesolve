@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Optional
 
 
 def home_dir() -> Path:
@@ -23,5 +24,17 @@ def artifacts_dir() -> Path:
     return workspace_dir() / "artifacts"
 
 
-def report_path() -> Path:
-    return artifacts_dir() / "report.json"
+def latest_run_dir() -> Optional[Path]:
+    base = artifacts_dir()
+    if not base.exists():
+        return None
+
+    candidates = [
+        path
+        for path in base.iterdir()
+        if path.is_dir() and (path / "report.json").exists()
+    ]
+    if not candidates:
+        return None
+
+    return max(candidates, key=lambda path: (path / "report.json").stat().st_mtime)

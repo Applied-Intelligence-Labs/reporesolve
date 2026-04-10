@@ -6,16 +6,21 @@ from .base import ToolResult
 
 
 def install_repos(env: Dict[str, Any], repo_paths: List[str]) -> ToolResult:
-    logs: List[str] = ["Mock install_repos invoked."]
-    errors: List[str] = []
+    logs: List[str] = [
+        "Repository installation is not part of RepoResolve v0 main flow.",
+        "Use `reporesolve doctor --install` for disposable install validation of the generated environment.",
+    ]
+    errors: List[str] = [
+        "Standalone repository installation is outside the RepoResolve v0 release flow."
+    ]
 
     if not repo_paths:
-        logs.append("No repositories provided; skipping install (mock).")
+        logs.append("No repositories were provided.")
 
     return ToolResult(
         name="install_repos",
-        success=True,
+        success=False,
         logs=logs,
         errors=errors,
-        data={},
+        data={"repo_count": len(repo_paths), "env_spec_provided": bool(env)},
     )

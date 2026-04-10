@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import questionary
 
+from ..agent.schema import ProposedChange
 from ..config.settings import load_settings
 
 
@@ -112,3 +113,94 @@ def confirm_proceed() -> bool:
     if answer is None:
         raise KeyboardInterrupt
     return bool(answer)
+
+
+def _validate_custom_value(value: str) -> bool | str:
+    if value.strip() == "":
+        return "Enter a value or cancel this review."
+    return True
+
+
+def prompt_change_resolution(
+    change: ProposedChange,
+    alternates: List[str],
+    mode: str,
+) -> Dict[str, Any]:
+    if mode == "auto":
+        return {
+            "resolution": "accepted",
+            "selected_value": change.proposed_value,
+            "action": change.action,
+        }
+
+    choices = ["Accept suggestion"]
+    if change.current_value:
+        choices.append("Reject and keep current value")
+    else:
+        choices.append("Reject suggestion")
+    if alternates:
+        choices.append("Choose alternate suggestion")
+    choices.extend(["Enter custom value", "Defer conflict"])
+
+    answer = questionary.select(
+        f"How should RepoResolve handle {change.package}?",
+        choices=choices,
+        default="Accept suggestion",
+    ).ask()
+    if answer is None:
+        raise KeyboardInterrupt
+
+    if answer == "Accept suggestion":
+        return {
+            "resolution": "accepted",
+            "selected_value": change.proposed_value,
+            "action": change.action,
+        }
+
+    if answer == "Reject and keep current value":
+        return {
+            "resolution": "rejected",
+            "selected_value": change.current_value,
+            "action": "pin" if change.current_value else "note",
+        }
+
+    if answer == "Reject suggestion":
+        return {
+            "resolution": "rejected",
+            "selected_value": None,
+            "action": "note",
+        }
+
+    if answer == "Choose alternate suggestion":
+        alternate = questionary.select(
+            f"Choose an alternate value for {change.package}:",
+            choices=alternates,
+        ).ask()
+        if alternate is None:
+            raise KeyboardInterrupt
+        return {
+            "resolution": "alternate",
+            "selected_value": alternate,
+            "action": "replace" if change.current_value else "add",
+        }
+
+    if answer == "Enter custom value":
+        default_value = change.proposed_value or change.current_value or ""
+        custom = questionary.text(
+            f"Enter the value to use for {change.package}:",
+            default=default_value,
+            validate=_validate_custom_value,
+        ).ask()
+        if custom is None:
+            raise KeyboardInterrupt
+        return {
+            "resolution": "custom",
+            "selected_value": custom.strip(),
+            "action": "replace" if change.current_value else "add",
+        }
+
+    return {
+        "resolution": "deferred",
+        "selected_value": None,
+        "action": "defer",
+    }

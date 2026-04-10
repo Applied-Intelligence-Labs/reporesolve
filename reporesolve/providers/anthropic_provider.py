@@ -2,33 +2,32 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any, Dict
 
-from .base import BaseProvider
-
-
-def _mock_decision(reason: str) -> str:
-    return json.dumps(
-        {
-            "action": "explain",
-            "reason": reason,
-            "changes": [],
-            "retry": False,
-            "confidence": 0.0,
-        }
-    )
+from .base import (
+    BaseProvider,
+    ProviderConfigurationError,
+    ProviderExecutionError,
+    ProviderUnavailableError,
+)
 
 
 class AnthropicProvider(BaseProvider):
-    def generate_decision(self, prompt: str, context: Dict[str, Any]) -> str:
+    def validate_configuration(self) -> None:
         if not self.api_key:
-            return _mock_decision("Anthropic API key not configured.")
+            raise ProviderConfigurationError("Anthropic API key not configured.")
 
         try:
-            import anthropic  # type: ignore
-        except Exception:
-            return _mock_decision("Anthropic SDK not installed; returning mock decision.")
+            import anthropic  # type: ignore  # noqa: F401
+        except Exception as exc:
+            raise ProviderUnavailableError(
+                "Anthropic SDK is not installed. Install the `anthropic` package to use the Anthropic provider."
+            ) from exc
+
+    def generate_decision(self, prompt: str, context: Dict[str, Any]) -> str:
+        self.validate_configuration()
+
+        import anthropic  # type: ignore
 
         try:
             client = anthropic.Anthropic(api_key=self.api_key)
@@ -42,7 +41,9 @@ class AnthropicProvider(BaseProvider):
             if hasattr(message, "content") and message.content:
                 text = message.content[0].text
             if not text:
-                return _mock_decision("Anthropic response missing text output.")
+                raise ProviderExecutionError("Anthropic response missing text output.")
             return text
         except Exception as exc:
-            return _mock_decision(f"Anthropic call failed: {exc}")
+            if isinstance(exc, ProviderExecutionError):
+                raise
+            raise ProviderExecutionError(f"Anthropic call failed: {exc}") from exc

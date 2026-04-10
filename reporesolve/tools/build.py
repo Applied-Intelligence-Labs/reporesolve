@@ -6,16 +6,21 @@ from .base import ToolResult
 
 
 def build_environment(env_spec: Dict[str, Any]) -> ToolResult:
-    logs: List[str] = ["Mock build_environment invoked."]
-    errors: List[str] = []
+    logs: List[str] = [
+        "Build execution is not part of RepoResolve v0 main flow.",
+        "Use `reporesolve doctor` for solve/install validation against generated artifacts.",
+    ]
+    errors: List[str] = [
+        "Standalone environment build execution is outside the RepoResolve v0 release flow."
+    ]
 
     if not env_spec:
-        logs.append("No environment spec provided; skipping build (mock).")
+        logs.append("No environment spec was provided.")
 
     return ToolResult(
         name="build_environment",
-        success=True,
+        success=False,
         logs=logs,
         errors=errors,
-        data={},
+        data={"env_spec_provided": bool(env_spec)},
     )

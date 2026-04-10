@@ -2,33 +2,32 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any, Dict
 
-from .base import BaseProvider
-
-
-def _mock_decision(reason: str) -> str:
-    return json.dumps(
-        {
-            "action": "explain",
-            "reason": reason,
-            "changes": [],
-            "retry": False,
-            "confidence": 0.0,
-        }
-    )
+from .base import (
+    BaseProvider,
+    ProviderConfigurationError,
+    ProviderExecutionError,
+    ProviderUnavailableError,
+)
 
 
 class OpenAIProvider(BaseProvider):
-    def generate_decision(self, prompt: str, context: Dict[str, Any]) -> str:
+    def validate_configuration(self) -> None:
         if not self.api_key:
-            return _mock_decision("OpenAI API key not configured.")
+            raise ProviderConfigurationError("OpenAI API key not configured.")
 
         try:
-            from openai import OpenAI  # type: ignore
-        except Exception:
-            return _mock_decision("OpenAI SDK not installed; returning mock decision.")
+            from openai import OpenAI  # type: ignore  # noqa: F401
+        except Exception as exc:
+            raise ProviderUnavailableError(
+                "OpenAI SDK is not installed. Install the `openai` package to use the OpenAI provider."
+            ) from exc
+
+    def generate_decision(self, prompt: str, context: Dict[str, Any]) -> str:
+        self.validate_configuration()
+
+        from openai import OpenAI  # type: ignore
 
         try:
             client = OpenAI(api_key=self.api_key)
@@ -38,7 +37,9 @@ class OpenAIProvider(BaseProvider):
             if not text:
                 text = response.output[0].content[0].text  # type: ignore[attr-defined]
             if not text:
-                return _mock_decision("OpenAI response missing text output.")
+                raise ProviderExecutionError("OpenAI response missing text output.")
             return text
         except Exception as exc:
-            return _mock_decision(f"OpenAI call failed: {exc}")
+            if isinstance(exc, ProviderExecutionError):
+                raise
+            raise ProviderExecutionError(f"OpenAI call failed: {exc}") from exc
