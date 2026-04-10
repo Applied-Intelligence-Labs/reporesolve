@@ -71,7 +71,7 @@ def doctor(
         help="Attempt disposable install validation after solve passes.",
     ),
 ) -> None:
-    """Validate the latest generated run."""
+    """Validate the latest generated run in the current directory."""
     raise typer.Exit(code=_handle_doctor(install=install))
 
 

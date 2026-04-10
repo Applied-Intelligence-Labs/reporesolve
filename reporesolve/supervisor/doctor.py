@@ -440,7 +440,12 @@ def _install_validation(environment_path: Path, run_dir: Path, requested: bool) 
 
 
 def run_doctor(install: bool = False) -> Dict[str, Any]:
-    console.print(Panel("Running doctor against the latest generated run...", title="RepoResolve Doctor"))
+    console.print(
+        Panel(
+            "Running doctor against the latest generated run in the current directory...",
+            title="RepoResolve Doctor",
+        )
+    )
 
     loaded = _load_latest_run()
     run_dir: Path = loaded["run_dir"]

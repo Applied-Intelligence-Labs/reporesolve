@@ -101,7 +101,7 @@ If cloning fails because GitHub access is not configured, RepoResolve stops and 
 Each run creates:
 
 ```text
-~/.reporesolve/workspace/artifacts/<run_id>/
+./artifacts/<run_id>/
 ```
 
 Contents:
@@ -142,10 +142,15 @@ RepoResolve reads API keys from:
 
 If no provider is configured, RepoResolve fails explicitly.
 
+RepoResolve writes run outputs relative to the directory where you run the command:
+
+- cloned repos: `./repos/`
+- artifacts: `./artifacts/<run_id>/`
+
 ## Commands
 
 - `reporesolve` - run the workflow
 - `reporesolve start` - alias for the workflow
-- `reporesolve doctor` - validate the latest generated run
+- `reporesolve doctor` - validate the latest generated run in the current directory
 - `reporesolve doctor --install` - attempt disposable install validation
 - `reporesolve version` - show the installed version

@@ -1,0 +1,18 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging metadata
+*.egg-info/
+.eggs/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local tool output
+artifacts/
+repos/

@@ -16,12 +16,19 @@ def config_file_path() -> Path:
     return home_dir() / "config.json"
 
 
+def run_dir() -> Path:
+    override = os.environ.get("REPORESOLVE_WORKDIR")
+    if override:
+        return Path(override).expanduser().resolve()
+    return Path.cwd().resolve()
+
+
 def workspace_dir() -> Path:
-    return home_dir() / "workspace"
+    return run_dir()
 
 
 def artifacts_dir() -> Path:
-    return workspace_dir() / "artifacts"
+    return run_dir() / "artifacts"
 
 
 def latest_run_dir() -> Optional[Path]:

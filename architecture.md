@@ -119,7 +119,7 @@ It also scans for setup clues in files such as:
 Each run creates:
 
 ```text
-~/.reporesolve/workspace/artifacts/<run_id>/
+./artifacts/<run_id>/
 ```
 
 Files:
@@ -133,7 +133,7 @@ Files:
 
 ## Doctor Workflow
 
-`reporesolve doctor` validates the latest generated run.
+`reporesolve doctor` validates the latest generated run in the current directory.
 
 Flow:
 
@@ -168,13 +168,12 @@ It checks:
 
 ## Storage and Config
 
-Default paths:
+Run-scoped paths are relative to the directory where RepoResolve is invoked:
 
-- home: `~/.reporesolve/`
-- workspace: `~/.reporesolve/workspace/`
-- artifacts: `~/.reporesolve/workspace/artifacts/<run_id>/`
+- clones: `./repos/`
+- artifacts: `./artifacts/<run_id>/`
 
-`REPORESOLVE_HOME` can override the default home directory.
+`REPORESOLVE_WORKDIR` can override the working directory used for repos and artifacts.
 
 Settings are loaded from:
 
